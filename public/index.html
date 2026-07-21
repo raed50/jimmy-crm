@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jimmy's Fitness — Dashboard Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#E8151B;--red-dark:#B50F14;--red-light:#FF3B40;--red-glow:rgba(232,21,27,0.15);
+  --black:#090909;--black2:#111111;--black3:#181818;--black4:#202020;--black5:#252525;
+  --white:#FFFFFF;--gray:#777777;--gray2:#444444;--border:#252525;--border2:#2E2E2E;
+}
+body{background:var(--black);color:var(--white);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ════════════════════════════════
+   LOGIN
+════════════════════════════════ */
+#loginScreen{
+  position:fixed;inset:0;background:var(--black);
+  display:flex;align-items:stretch;justify-content:center;
+  z-index:9999;flex-direction:row;
+}
+.login-left{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;background:var(--black2);
+}
+.login-left img{
+  max-width:70%;max-height:70%;object-fit:contain;border-radius:12px;
+  filter:drop-shadow(0 0 40px rgba(232,21,27,0.15));
+}
+.login-left::after{
+  content:'';position:absolute;right:0;top:10%;height:80%;width:2px;
+  background:var(--red);opacity:0.6;
+}
+.login-right{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px;
+}
+.login-tagline{
+  font-size:11px;letter-spacing:6px;color:var(--gray);
+  text-transform:uppercase;margin-bottom:24px;text-align:center;
+}
+.login-box{
+  background:var(--black3);border:1px solid var(--border2);
+  border-radius:16px;padding:30px 36px;width:380px;
+  box-shadow:0 0 80px rgba(0,0,0,0.8);
+}
+.login-box h2{
+  font-family:'Bebas Neue',cursive;font-size:26px;
+  letter-spacing:3px;margin-bottom:6px;color:var(--white);
+}
+.login-redline{width:44px;height:3px;background:var(--red);border-radius:2px;margin-bottom:20px}
+.fg{margin-bottom:14px}
+.fg label{
+  display:block;font-size:11px;letter-spacing:2px;
+  color:var(--gray);text-transform:uppercase;margin-bottom:8px;
+}
+.fg input{
+  width:100%;background:var(--black4);border:1px solid var(--border);
+  border-radius:8px;padding:11px 14px;color:var(--white);
+  font-family:'Rajdhani',sans-serif;font-size:15px;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.fg input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,21,27,0.1)}
+.lbtn{
+  width:100%;background:var(--red);color:var(--white);border:none;
+  border-radius:8px;padding:13px;font-family:'Bebas Neue',cursive;
+  font-size:20px;letter-spacing:4px;cursor:pointer;
+  transition:background .2s,transform .1s;margin-top:4px;
+}
+.lbtn:hover{background:var(--red-dark)}
+.lbtn:active{transform:scale(0.99)}
+.lerr{color:var(--red);font-size:13px;text-align:center;margin-top:12px;display:none}
+.lhint{font-size:11px;color:var(--gray2);text-align:center;margin-top:16px}
+
+/* ════════════════════════════════
+   LOGIN RESPONSIVE
+════════════════════════════════ */
+@media(max-width:768px){
+  #loginScreen{flex-direction:column}
+  .login-left{flex:none;width:100%;height:35vh;min-height:180px;border-bottom:1px solid var(--border)}
+  .login-left img{max-width:60%;max-height:80%}
+  .login-left::after{display:none}
+  .login-right{flex:none;width:100%;padding:24px 20px}
+  .login-box{width:100%;max-width:340px;padding:24px 20px}
+  .login-tagline{font-size:10px;letter-spacing:4px;margin-bottom:16px}
+  .login-box h2{font-size:22px}
+  .fg input{padding:12px;font-size:16px}
+  .lbtn{font-size:18px;padding:14px}
+}
+
+/* ════════════════════════════════
+   LAYOUT
+════════════════════════════════ */
+#dashboard{display:none;min-height:100vh}
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:235px;
+  background:var(--black2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:100;
+}
+.sb-logo{padding:24px 22px 20px;border-bottom:1px solid var(--border)}
+.sb-logo-img{max-width:160px;height:auto;margin-bottom:4px}
+.sb-hamburger{display:none;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;padding:4px 8px;transition:color .2s}
+.sb-hamburger:hover{color:var(--red)}
+.sb-brand{font-family:'Bebas Neue',cursive;font-size:28px;color:var(--red);letter-spacing:2px}
+.sb-brand span{color:var(--white)}
+.sb-sub{font-size:10px;color:var(--gray);letter-spacing:3px;text-transform:uppercase;margin-top:3px}
+.sb-nav{padding:20px 0;flex:1;overflow-y:auto}
+.sb-section{
+  font-size:10px;color:var(--gray2);letter-spacing:3px;
+  text-transform:uppercase;padding:12px 22px 8px;
+}
+.ni{
+  display:flex;align-items:center;gap:12px;padding:12px 22px;
+  color:var(--gray);font-size:14px;font-weight:500;cursor:pointer;
+  transition:all .2s;border-left:3px solid transparent;letter-spacing:.5px;
+}
+.ni:hover{color:var(--white);background:var(--red-glow);border-left-color:var(--red)}
+.ni.active{color:var(--white);background:rgba(232,21,27,0.1);border-left-color:var(--red)}
+.ni .ico{width:18px;text-align:center;font-size:15px}
+.sb-counter{
+  margin-left:auto;background:var(--black4);border:1px solid var(--border);
+  color:var(--gray);font-size:10px;min-width:20px;height:20px;
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  padding:0 5px;
+}
+.ni.active .sb-counter{background:var(--red-dark);color:var(--white);border-color:var(--red-dark)}
+.sb-footer{padding:16px 22px;border-top:1px solid var(--border)}
+.lout{
+  display:flex;align-items:center;gap:10px;color:var(--gray);
+  font-size:14px;cursor:pointer;transition:color .2s;
+}
+.lout:hover{color:var(--red)}
+
+/* ════════════════════════════════
+   MAIN
+════════════════════════════════ */
+.main{margin-left:235px;padding:28px 34px;min-height:100vh}
+.ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px}
+.pt{font-family:'Bebas Neue',cursive;font-size:34px;letter-spacing:3px;line-height:1}
+.pt span{color:var(--red)}
+.psub{font-size:12px;color:var(--gray);letter-spacing:1px;margin-top:4px}
+.pr{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px}
+
+.live-badge{
+  background:rgba(232,21,27,0.1);border:1px solid var(--red);
+  color:var(--red);font-size:11px;letter-spacing:2px;
+  padding:6px 14px;border-radius:20px;display:flex;align-items:center;gap:7px;
+}
+.dot{width:7px;height:7px;background:var(--red);border-radius:50%;animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+
+.dbadge{
+  background:var(--black3);border:1px solid var(--border);
+  color:var(--gray);font-size:12px;padding:6px 14px;border-radius:7px;
+}
+.refresh-btn{
+  background:var(--black3);border:1px solid var(--border);color:var(--gray);
+  font-size:13px;padding:6px 14px;border-radius:7px;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;gap:6px;
+}
+.refresh-btn:hover{border-color:var(--red);color:var(--red)}
+.refresh-btn.spinning .ricon{animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ricon{display:inline-block;transition:none}
+
+.countdown-bar{
+  margin-bottom:22px;background:var(--black3);border:1px solid var(--border);
+  border-radius:8px;padding:10px 16px;display:flex;align-items:center;gap:12px;
+  font-size:12px;color:var(--gray);
+}
+.cbar-track{flex:1;background:var(--black5);border-radius:3px;height:4px;overflow:hidden}
+.cbar-fill{height:100%;background:var(--gray);border-radius:3px;transition:width .5s linear}
+.cbar-text{color:var(--gray);min-width:80px;text-align:right}
+
+/* ════════════════════════════════
+   LOADING
+════════════════════════════════ */
+.loading{text-align:center;padding:60px 20px;color:var(--gray)}
+.spinner{
+  width:40px;height:40px;border:3px solid var(--border2);
+  border-top-color:var(--red);border-radius:50%;
+  animation:spin .8s linear infinite;margin:0 auto 16px;
+}
+.loading p{font-size:14px;letter-spacing:1px}
+
+/* ════════════════════════════════
+   STATS CARDS
+════════════════════════════════ */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.sc{
+  background:var(--black3);border:1px solid var(--border);
+  border-radius:11px;padding:20px;position:relative;
+  overflow:hidden;transition:border-color .2s,transform .2s;
+}
+.sc:hover{border-color:rgba(232,21,27,0.4);transform:translateY(-2px)}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sc.r::before{background:var(--red)}
+.sc.g::before{background:#22c55e}
+.sc.a::before{background:#f59e0b}
+.sc.b::before{background:#3b82f6}
+.slbl{font-size:10px;letter-spacing:2px;color:var(--gray);text-transform:uppercase;margin-bottom:10px}
+.sval{font-family:'Bebas Neue',cursive;font-size:44px;line-height:1;letter-spacing:1px}
+.ssub{font-size:12px;color:var(--gray);margin-top:5px;display:flex;align-items:center;gap:5px}
+.sup{color:#22c55e}.sdn{color:var(--red)}
+.sico{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:34px;opacity:.06}
+
+/* ════════════════════════════════
+   CHART CARDS
+════════════════════════════════ */
+.charts-row{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:22px}
+.charts-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:22px}
+.cc{background:var(--black3);border:1px solid var(--border);border-radius:11px;padding:22px}
+.ct{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:2px;margin-bottom:3px}
+.cs{font-size:11px;color:var(--gray);margin-bottom:18px;letter-spacing:.5px}
+.ch{position:relative}
+
+/* ════════════════════════════════
+   DONUTS
+════════════════════════════════ */
+.donuts-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.dc{
+  background:var(--black3);border:1px solid var(--border);
+  border-radius:11px;padding:20px;text-align:center;
+  transition:border-color .2s;
+}
+.dc:hover{border-color:rgba(232,21,27,0.3)}
+.dc-title{font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:2px;margin-bottom:12px;color:var(--gray)}
+.dw{position:relative;width:110px;height:110px;margin:0 auto 14px}
+svg.dr{transform:rotate(-90deg)}
+.dctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.dpct{font-family:'Bebas Neue',cursive;font-size:26px;line-height:1}
+.dlbl{font-size:9px;color:var(--gray);letter-spacing:1px;margin-top:3px}
+.dc-sub{font-size:12px;color:var(--gray);line-height:1.4}
+.dc-sub strong{color:var(--white);font-weight:600}
+
+/* ════════════════════════════════
+   PROGRESS BARS
+════════════════════════════════ */
+.bars-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+.bc{background:var(--black3);border:1px solid var(--border);border-radius:11px;padding:22px}
+.bi{margin-bottom:15px}
+.bl{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.bl .n{color:var(--white);font-weight:500}
+.bl .v{color:var(--gray);font-size:12px}
+.bt{background:var(--black5);border-radius:3px;height:5px;overflow:hidden}
+.bf{height:100%;border-radius:3px;background:var(--red);transition:width 1.4s cubic-bezier(.4,0,.2,1)}
+.bf.g{background:#22c55e}.bf.a{background:#f59e0b}.bf.b{background:#3b82f6}.bf.gray{background:#333}
+
+/* ════════════════════════════════
+   TABLE
+════════════════════════════════ */
+.table-card{background:var(--black3);border:1px solid var(--border);border-radius:11px;padding:22px;margin-bottom:22px}
+.th2{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.search{
+  background:var(--black4);border:1px solid var(--border);
+  border-radius:7px;padding:9px 14px;color:var(--white);
+  font-family:'Rajdhani',sans-serif;font-size:14px;outline:none;
+  width:220px;transition:border-color .2s;
+}
+.search:focus{border-color:var(--red)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th{
+  font-size:10px;letter-spacing:2px;color:var(--gray);
+  text-transform:uppercase;text-align:left;
+  padding:10px 14px;border-bottom:1px solid var(--border);white-space:nowrap;
+}
+td{
+  font-size:13px;color:var(--white);
+  padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.03);
+}
+tr:hover td{background:rgba(232,21,27,0.03)}
+.no-rows{text-align:center;padding:30px;color:var(--gray);font-size:13px}
+.bh{
+  display:inline-block;font-size:10px;letter-spacing:1px;
+  padding:3px 10px;border-radius:20px;font-weight:600;text-transform:uppercase;
+}
+.bh-r{background:rgba(232,21,27,0.18);color:#ff7070;border:1px solid rgba(232,21,27,0.35)}
+.bh-a{background:rgba(245,158,11,0.18);color:#fbbf24;border:1px solid rgba(245,158,11,0.35)}
+.bh-g{background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3)}
+.tb2{background:rgba(59,130,246,0.12);color:#60a5fa;font-size:11px;padding:3px 8px;border-radius:4px;white-space:nowrap}
+.tw{background:rgba(34,197,94,0.12);color:#4ade80;font-size:11px;padding:3px 8px;border-radius:4px}
+.club-pill{
+  font-size:10px;padding:2px 8px;border-radius:4px;
+  border:1px solid var(--border2);color:var(--gray);white-space:nowrap;
+}
+.no-data-cell{color:var(--gray2);font-size:12px}
+
+/* ════════════════════════════════
+   GLOBAL CLUBS GRID
+════════════════════════════════ */
+.allclubs-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+.club-mini{
+  background:var(--black3);border:1px solid var(--border);
+  border-radius:11px;padding:20px;cursor:pointer;transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.club-mini::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red)}
+.club-mini:hover{border-color:rgba(232,21,27,0.4);transform:translateY(-2px)}
+.club-mini h3{font-family:'Bebas Neue',cursive;font-size:24px;letter-spacing:2px;margin-bottom:2px}
+.club-mini h3 span{color:var(--red)}
+.club-mini-sub{font-size:11px;color:var(--gray);margin-bottom:14px;letter-spacing:.5px}
+.mini-stats{display:flex;gap:20px}
+.mstat-v{font-family:'Bebas Neue',cursive;font-size:30px;color:var(--white);line-height:1}
+.mstat-l{font-size:10px;color:var(--gray);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.club-mini-badge{
+  position:absolute;right:14px;top:14px;
+  font-size:10px;padding:3px 10px;border-radius:20px;
+  background:rgba(232,21,27,0.12);color:var(--red);border:1px solid rgba(232,21,27,0.25);
+}
+.empty-club{opacity:.5}
+
+/* ════════════════════════════════
+   ALERT / TOAST
+════════════════════════════════ */
+.toast{
+  position:fixed;bottom:28px;right:28px;
+  background:var(--black3);border:1px solid var(--border2);
+  border-radius:10px;padding:14px 18px;
+  font-size:13px;color:var(--white);z-index:9000;
+  display:flex;align-items:center;gap:10px;
+  transform:translateY(80px);opacity:0;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 8px 32px rgba(0,0,0,0.6);
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-icon{font-size:16px}
+.vbtn{background:none;border:1px solid var(--border);border-radius:5px;cursor:pointer;font-size:15px;padding:3px 7px;transition:all .2s;line-height:1}
+.vbtn:hover{border-color:var(--red)}
+.vbtn-on{border-color:#22c55e;background:rgba(34,197,94,0.15)}
+.vbtn-off{opacity:0.45}
+.vbtn-off:hover{opacity:1}
+.vbtn:disabled{cursor:not-allowed;opacity:0.3}
+.vbtn-on:disabled{cursor:not-allowed;opacity:0.8}
+.df-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.df-btn{background:var(--black4);border:1px solid var(--border);color:var(--gray);font-size:11px;padding:5px 12px;border-radius:5px;cursor:pointer;transition:all .2s;font-family:'Rajdhani',sans-serif;letter-spacing:.5px}
+.df-btn:hover{border-color:var(--red);color:var(--white)}
+.df-btn.active{background:var(--red);border-color:var(--red);color:var(--white)}
+.df-input{background:var(--black4);border:1px solid var(--border);border-radius:5px;padding:5px 9px;color:var(--gray);font-family:'Rajdhani',sans-serif;font-size:11px;outline:none;transition:border-color .2s}
+.df-input:focus{border-color:var(--red)}
+
+/* ════════════════════════════════
+   RESPONSIVE MOBILE
+════════════════════════════════ */
+@media(max-width:768px){
+  /* SIDEBAR */
+  .sidebar{width:100% !important;position:relative !important;height:auto;max-height:60px;overflow:hidden;transition:max-height .3s}
+  .sidebar.open{max-height:100vh}
+  .sb-logo{padding:12px 16px;border-bottom:none;display:flex;align-items:center;justify-content:space-between}
+  .sb-brand{font-size:22px}
+  .sb-hamburger{display:block}
+  .sb-sub{display:none}
+  .sb-nav{display:none;padding:10px 0}
+  .sidebar.open .sb-nav{display:block}
+  .sidebar.open .sb-sub{display:block}
+  .sb-section{padding:8px 16px 4px}
+  .ni{padding:10px 16px;font-size:13px}
+  .sb-footer{padding:10px 16px}
+
+  /* MAIN */
+  .main{margin-left:0 !important;padding:16px 12px;padding-top:70px}
+  .ph{flex-direction:column;gap:12px}
+  .pt{font-size:24px}
+  .psub{font-size:11px}
+  .pr{width:100%;justify-content:flex-start}
+  .live-badge{font-size:9px;padding:4px 10px}
+  .dbadge{font-size:10px;padding:4px 10px}
+  .refresh-btn{font-size:11px;padding:4px 10px}
+
+  /* COUNTDOWN */
+  .countdown-bar{padding:8px 12px;font-size:10px}
+  .cbar-text{min-width:40px;font-size:10px}
+
+  /* STATS */
+  .stats-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .sc{padding:14px}
+  .slbl{font-size:9px;letter-spacing:1px}
+  .sval{font-size:32px}
+  .ssub{font-size:10px}
+
+  /* CHARTS */
+  .charts-row{grid-template-columns:1fr;gap:8px}
+  .charts-row-3{grid-template-columns:1fr}
+  .cc{padding:14px}
+
+  /* DONUTS */
+  .donuts-row{grid-template-columns:1fr 1fr;gap:8px}
+  .dc{padding:14px}
+  .dw{width:80px;height:80px}
+  .dw svg{width:80px;height:80px}
+  .dpct{font-size:20px}
+
+  /* BARS */
+  .bars-row{grid-template-columns:1fr;gap:8px}
+
+  /* TABLE */
+  .table-card{padding:14px}
+  .th2{flex-direction:column;gap:8px}
+  .search{width:100%}
+  table{min-width:500px;font-size:12px}
+  th{font-size:9px;padding:8px}
+  td{padding:8px;font-size:12px}
+
+  /* ALL CLUBS GRID */
+  .allclubs-grid{grid-template-columns:1fr;gap:8px}
+  .club-mini{padding:14px}
+  .mini-stats{gap:12px}
+  .mstat-v{font-size:24px}
+
+  /* TOAST */
+  .toast{bottom:16px;right:16px;left:16px;font-size:12px}
+
+  /* FILTERS */
+  .df-bar{gap:4px}
+  .df-btn{font-size:10px;padding:4px 8px}
+  .df-input{padding:4px 6px}
+}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════
+     LOGIN
+══════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-left">
+    <img src="logo.png" alt="Jimmy's Fitness">
+  </div>
+  <div class="login-right">
+    <p class="login-tagline">Dashboard Admin — Multi-Clubs CRM</p>
+    <div class="login-box">
+      <h2>CONNEXION ADMIN</h2>
+      <div class="login-redline"></div>
+      <div class="fg">
+        <label>Identifiant</label>
+        <input type="text" id="lu" placeholder="admin" autocomplete="username"/>
+      </div>
+      <div class="fg">
+        <label>Mot de passe</label>
+        <input type="password" id="lp" placeholder="••••••••" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <button class="lbtn" onclick="doLogin()">ACCÉDER AU DASHBOARD</button>
+      <div class="lerr" id="lerr">⚠ Identifiants incorrects</div>
+      <p class="lhint">CRM Multi-Clubs — Accès sécurisé</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     DASHBOARD
+═══════════════════════════════ -->
+<div id="dashboard">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-brand">JIMMY'S <span>FITNESS</span></div>
+      <button class="sb-hamburger" onclick="toggleMenu()">☰</button>
+      <div class="sb-sub">CRM Multi-Clubs</div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section">Vues principales</div>
+      <div class="ni active" id="nav-global" onclick="setView('global',this)">
+        <span class="ico">📊</span> Vue Globale
+        <span class="sb-counter" id="cnt-global">—</span>
+      </div>
+
+      <div class="sb-section">Clubs</div>
+      <div class="ni" id="nav-MoulayIsmail" onclick="setView('club',this,'Moulay Ismail')">
+        <span class="ico">🏋️</span> Moulay Ismail
+        <span class="sb-counter" id="cnt-MoulayIsmail">—</span>
+      </div>
+      <div class="ni" id="nav-Zemouri" onclick="setView('club',this,'Zemouri')">
+        <span class="ico">🏋️</span> Zemouri
+        <span class="sb-counter" id="cnt-Zemouri">—</span>
+      </div>
+      <div class="ni" id="nav-Iberia" onclick="setView('club',this,'Iberia')">
+        <span class="ico">🏋️</span> Iberia
+        <span class="sb-counter" id="cnt-Iberia">—</span>
+      </div>
+      <div class="ni" id="nav-Kenitra" onclick="setView('club',this,'Kenitra')">
+        <span class="ico">🏋️</span> Kenitra
+        <span class="sb-counter" id="cnt-Kenitra">—</span>
+      </div>
+      <div class="ni" id="nav-JimmyRabat" onclick="setView('club',this,'Jimmy Rabat')">
+        <span class="ico">🏋️</span> Jimmy's Rabat
+        <span class="sb-counter" id="cnt-JimmyRabat">—</span>
+      </div>
+
+      <div class="sb-section">Filtres rapides</div>
+      <div class="ni" id="nav-leads" onclick="setView('leads',this)">
+        <span class="ico">🔥</span> Leads Chauds
+        <span class="sb-counter" id="cnt-leads">—</span>
+      </div>
+      <div class="ni" id="nav-abo" onclick="setView('abo',this)">
+        <span class="ico">📋</span> Abonnements
+        <span class="sb-counter" id="cnt-abo">—</span>
+      </div>
+      <div class="ni" id="nav-rdv" onclick="setView('rdv',this)">
+        <span class="ico">📅</span> Rendez-vous
+        <span class="sb-counter" id="cnt-rdv">—</span>
+      </div>
+      <div class="ni" id="nav-visite" onclick="setView('visite',this)">
+        <span class="ico">✅</span> Visites Confirmées
+        <span class="sb-counter" id="cnt-visite">—</span>
+      </div>
+
+    </div>
+    <div class="sb-footer">
+      <div class="lout" onclick="doLogout()"><span>🚪</span> Déconnexion</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="ph">
+      <div>
+        <div class="pt" id="pageTitle">VUE <span>GLOBALE</span></div>
+        <div class="psub" id="pageSub">Chargement des données...</div>
+      </div>
+      <div class="pr">
+        <div class="live-badge"><div class="dot"></div> LIVE</div>
+        <div class="dbadge" id="dateBadge"></div>
+        <div class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">
+          <span class="ricon" id="ricon">↻</span> Actualiser
+        </div>
+      </div>
+    </div>
+
+    <!-- COUNTDOWN BAR -->
+    <div class="countdown-bar">
+      <span style="font-size:11px;letter-spacing:1px">AUTO-REFRESH</span>
+      <div class="cbar-track"><div class="cbar-fill" id="cbarFill" style="width:100%"></div></div>
+      <span class="cbar-text" id="cbarText">30s</span>
+    </div>
+
+    <!-- CONTENT -->
+    <div id="mainContent">
+      <div class="loading"><div class="spinner"></div><p>Connexion à Google Sheets...</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon"></span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+/* ════════════════════════════════
+   CONFIG
+════════════════════════════════ */
+const API_BASE = '/api';
+let JWT_TOKEN = localStorage.getItem('jwt_token') || null;
+const CLUBS = [
+  {name:'Moulay Ismail', label:'Moulay Ismail'},
+  {name:'Zemouri',       label:'Zemouri'},
+  {name:'Iberia',        label:'Iberia'},
+  {name:'Kenitra',       label:'Kenitra'},
+  {name:'Jimmy Rabat',   label:"Jimmy's Rabat"},
+];
+const REFRESH_INTERVAL = 30;
+
+/* ════════════════════════════════
+   STATE
+════════════════════════════════ */
+let allData    = {};
+let charts     = [];
+let currentView= 'global';
+let currentClub= null;
+let countdown  = REFRESH_INTERVAL;
+let countdownT = null;
+let refreshT   = null;
+let validState = { sub: {}, visit: {} };
+let savingKeys = { sub: {}, visit: {} };
+let activeDateFilter = 'all';
+let activeScoreFilter = 'all';
+
+/* ════════════════════════════════
+   LOGIN
+════════════════════════════════ */
+async function doLogin(){
+  const u = document.getElementById('lu').value.trim();
+  const p = document.getElementById('lp').value;
+  const err = document.getElementById('lerr');
+  if(!u || !p){
+    err.textContent = '⚠ Veuillez remplir tous les champs';
+    err.style.display = 'block';
+    setTimeout(()=>err.style.display='none',3000);
+    return;
+  }
+  try {
+    const res = await fetch(API_BASE+'/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:u,password:p})
+    });
+    const data = await res.json();
+    if(res.ok && data.success){
+      JWT_TOKEN = data.token;
+      localStorage.setItem('jwt_token', data.token);
+      document.getElementById('loginScreen').style.display='none';
+      document.getElementById('dashboard').style.display='block';
+      document.getElementById('dateBadge').textContent=
+        new Date().toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+      loadAllData();
+      startCountdown();
+    } else {
+      err.textContent = '⚠ '+(data.error||'Identifiants incorrects');
+      err.style.display='block';
+      setTimeout(()=>err.style.display='none',3000);
+    }
+  } catch(e){
+    err.textContent = '⚠ Erreur de connexion au serveur';
+    err.style.display='block';
+    setTimeout(()=>err.style.display='none',3000);
+  }
+}
+
+function toggleMenu(){
+  const sidebar = document.querySelector('.sidebar');
+  sidebar.classList.toggle('open');
+}
+
+function doLogout(){
+  clearInterval(countdownT);
+  clearTimeout(refreshT);
+  JWT_TOKEN = null;
+  localStorage.removeItem('jwt_token');
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('lu').value='';
+  document.getElementById('lp').value='';
+}
+
+/* ════════════════════════════════
+   AUTO-REFRESH COUNTDOWN
+════════════════════════════════ */
+function startCountdown(){
+  clearInterval(countdownT);
+  countdown = REFRESH_INTERVAL;
+  countdownT = setInterval(()=>{
+    countdown--;
+    const pct = (countdown / REFRESH_INTERVAL) * 100;
+    document.getElementById('cbarFill').style.width = pct + '%';
+    document.getElementById('cbarText').textContent = countdown + 's';
+    if(countdown <= 0){
+      countdown = REFRESH_INTERVAL;
+      loadAllData();
+    }
+  }, 1000);
+}
+
+function manualRefresh(){
+  countdown = REFRESH_INTERVAL;
+  document.getElementById('cbarFill').style.width = '100%';
+  document.getElementById('cbarText').textContent = REFRESH_INTERVAL + 's';
+  loadAllData();
+}
+
+/* ════════════════════════════════
+   FETCH GOOGLE SHEETS
+════════════════════════════════ */
+async function fetchSheet(club){
+  if(!JWT_TOKEN) return [];
+  try {
+    const res = await fetch(API_BASE+'/sheets?club='+encodeURIComponent(club.name),{
+      headers:{'Authorization':'Bearer '+JWT_TOKEN}
+    });
+    if(res.status===401){
+      JWT_TOKEN=null;localStorage.removeItem('jwt_token');location.reload();return[];
+    }
+    const data = await res.json();
+    return data.data||[];
+  }catch(e){return[]}
+}
+
+async function loadAllData(){
+  setRefreshSpinner(true);
+  const prev = Object.values(allData).flat().length;
+  const prevAbo = {...validState.sub};
+  const prevVisit = {...validState.visit};
+  allData = {};
+  validState = { sub: {}, visit: {} };
+  for(const club of CLUBS){
+    allData[club.name] = await fetchSheet(club);
+  }
+  const aboData = await fetchSheet({name:'Abonnement'});
+  const visitData = await fetchSheet({name:'VISITE'});
+  aboData.forEach(r => {
+    const key = encodeURIComponent([r['Club']||'', r['Nom']||'', r['Numéro']||r['Numero']||''].join('|'));
+    validState.sub[key] = true;
+  });
+  visitData.forEach(r => {
+    const key = encodeURIComponent([r['Club']||'', r['Nom']||'', r['Numéro']||r['Numero']||''] .join('|'));
+    validState.visit[key] = true;
+  });
+  // Merge back optimistic validations (Google Sheets may not have propagated yet)
+  Object.keys(prevAbo).forEach(k => { if(!validState.sub[k]) validState.sub[k] = true; });
+  Object.keys(prevVisit).forEach(k => { if(!validState.visit[k]) validState.visit[k] = true; });
+  updateCounters();
+  renderView();
+  setRefreshSpinner(false);
+  const now = Object.values(allData).flat().length;
+  if(prev > 0 && now !== prev){
+    showToast('🔄', `Données mises à jour — ${now} clients`);
+  } else if(prev > 0){
+    showToast('✅', `Données à jour — ${now} clients`);
+  }
+}
+
+function setRefreshSpinner(on){
+  const btn = document.getElementById('refreshBtn');
+  if(on) btn.classList.add('spinning'); else btn.classList.remove('spinning');
+}
+
+/* ════════════════════════════════
+   COUNTERS
+════════════════════════════════ */
+function updateCounters(){
+  const all = getAllRows();
+  document.getElementById('cnt-global').textContent = all.length;
+  CLUBS.forEach(c => {
+    const key = c.name.replace(/[.\s\u2019']/g,'');
+    const el = document.getElementById('cnt-' + key);
+    if(el) el.textContent = (allData[c.name]||[]).length;
+  });
+  document.getElementById('cnt-leads').textContent =
+    all.filter(r => isChaud(r)).length;
+  document.getElementById('cnt-abo').textContent =
+    all.filter(r => validState.sub[encodeURIComponent(getClientKey(r))]).length;
+  document.getElementById('cnt-rdv').textContent =
+    all.filter(r => getVisite(r)).length;
+  document.getElementById('cnt-visite').textContent =
+    all.filter(r => validState.visit[encodeURIComponent(getClientKey(r))]).length;
+
+}
+
+/* ════════════════════════════════
+   VIEWS
+════════════════════════════════ */
+function setView(view, el, club=null){
+  currentView = view;
+  currentClub = club;
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderView();
+}
+
+function renderView(){
+  destroyCharts();
+  if(currentView === 'global')      renderGlobal();
+  else if(currentView === 'club')   renderClub(currentClub);
+  else if(currentView === 'leads')  renderFiltered('leads');
+  else if(currentView === 'abo')    renderFiltered('abo');
+  else if(currentView === 'rdv')    renderFiltered('rdv');
+  else if(currentView === 'visite') renderFiltered('visite');
+
+}
+
+/* ════════════════════════════════
+   GLOBAL VIEW
+════════════════════════════════ */
+function renderGlobal(){
+  setHeader('VUE <span>GLOBALE</span>', 'Tous les clubs — Données Google Sheets live');
+  const allRows = getAllRows();
+  const all     = applyFilters(allRows);
+  const total   = all.length;
+  const chaud   = all.filter(r => isChaud(r)).length;
+  const avecAbo = all.filter(r => getAbo(r)).length;
+  const waCount = all.filter(r => isWA(r)).length;
+  const rdvCount= all.filter(r => getVisite(r)).length;
+
+  const pctChaud = pct(chaud, total);
+  const pctAbo   = pct(avecAbo, total);
+  const pctWa    = pct(waCount, total);
+
+  const byClub   = CLUBS.map(c => applyFilters(allData[c.name]||[]).length);
+  const aboMap   = getAboMap(all);
+  const topAbo   = Object.entries(aboMap).sort((a,b)=>b[1]-a[1]);
+
+  const mc = document.getElementById('mainContent');
+  mc.innerHTML = `
+  <!-- FILTERS -->
+  <div class="table-card" style="margin-bottom:16px">
+    ${dateFilterBar()}
+    ${scoreFilterBar()}
+  </div>
+  <!-- STATS -->
+  <div class="stats-grid">
+    ${statCard('r','👥','Total Clients',total,'Tous clubs confondus')}
+    ${statCard('g','🔥','Leads Chauds',chaud,`<span class="sup">${pctChaud}%</span> du total`)}
+    ${statCard('a','📋','Avec Abonnement',avecAbo,`<span class="sup">${pctAbo}%</span> du total`)}
+    ${statCard('b','📅','Rendez-vous',rdvCount,`${waCount} via WhatsApp`)}
+  </div>
+
+  <!-- MINI CLUBS -->
+  <div class="allclubs-grid">
+    ${CLUBS.map((c,i) => {
+      const n = (allData[c.name]||[]).length;
+      const a = (allData[c.name]||[]).filter(r=>getAbo(r)).length;
+      const ch= (allData[c.name]||[]).filter(r=>isChaud(r)).length;
+      const cls = n===0 ? 'club-mini empty-club':'club-mini';
+      return `<div class="${cls}" onclick="document.getElementById('nav-${c.name.replace(/[.\s\u2019']/g,'')}').click()">
+        <div class="club-mini-badge">CLUB</div>
+        <h3>${c.name.replace('.','')} <span>FITNESS</span></h3>
+        <div class="club-mini-sub">${c.label}</div>
+        <div class="mini-stats">
+          <div><div class="mstat-v">${n}</div><div class="mstat-l">Clients</div></div>
+          <div><div class="mstat-v" style="color:var(--red)">${ch}</div><div class="mstat-l">Chauds</div></div>
+          <div><div class="mstat-v" style="color:#22c55e">${a}</div><div class="mstat-l">Abonnés</div></div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts-row">
+    <div class="cc">
+      <div class="ct">CLIENTS PAR CLUB</div>
+      <div class="cs">Répartition multi-clubs</div>
+      <div class="ch" style="height:210px">
+        <canvas id="cBarClubs" role="img" aria-label="Clients par club"></canvas>
+      </div>
+    </div>
+    <div class="cc">
+      <div class="ct">TYPES D'ABONNEMENT</div>
+      <div class="cs">Toutes formules confondues</div>
+      <div class="ch" style="height:210px">
+        <canvas id="cAboDonut" role="img" aria-label="Types abonnement"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- DONUTS -->
+  <div class="donuts-row">
+    ${donutHTML('LEADS CHAUDS',    pctChaud,         '#E8151B', `<strong>${chaud}</strong> sur ${total} clients`)}
+    ${donutHTML('ABONNÉS',         pctAbo,           '#22c55e', `<strong>${avecAbo}</strong> inscrits`)}
+    ${donutHTML('SANS ABONNEMENT', 100-pctAbo,       '#f59e0b', `<strong>${total-avecAbo}</strong> à convertir`)}
+    ${donutHTML('VIA WHATSAPP',    pctWa,            '#3b82f6', `<strong>${waCount}</strong> contact(s) WA`)}
+  </div>
+
+  <!-- BARS -->
+  <div class="bars-row">
+    <div class="bc">
+      <div class="ct">FORMULES POPULAIRES</div>
+      <div class="cs" style="margin-bottom:18px">Top abonnements — tous clubs</div>
+      ${topAbo.length ? topAbo.map((e,i) => {
+        const p2 = total ? Math.round(e[1]/total*100) : 0;
+        return barItem(e[0], e[1]+' client(s)', Math.max(p2,3), ['','b','a','g','gray'][Math.min(i,4)]);
+      }).join('') : '<p style="color:var(--gray2);font-size:13px">Aucun abonnement enregistré</p>'}
+    </div>
+    <div class="bc">
+      <div class="ct">RÉPARTITION PAR CLUB</div>
+      <div class="cs" style="margin-bottom:18px">Nombre de clients</div>
+      ${CLUBS.map((c,i) => {
+        const n = (allData[c.name]||[]).length;
+        const p2= total ? Math.round(n/total*100) : 0;
+        return barItem(c.name, n+' client(s)', Math.max(p2,2), ['','g','a','b'][i]);
+      }).join('')}
+    </div>
+  </div>
+
+  <!-- TABLE COMPLETE -->
+  <div class="table-card">
+    <div class="th2">
+      <div>
+        <div class="ct">TOUS LES CLIENTS</div>
+        <div class="cs">Vue consolidée — ${total} clients au total</div>
+      </div>
+      <input class="search" type="text" placeholder="Rechercher..." oninput="filterT(this.value,'tbl-global')"/>
+    </div>
+    <div class="tbl-wrap">${buildTable(all,'tbl-global')}</div>
+  </div>`;
+
+  setTimeout(() => {
+    // Bar clubs
+    const c1 = new Chart(document.getElementById('cBarClubs'), {
+      type:'bar',
+      data:{
+        labels: CLUBS.map(c=>c.name),
+        datasets:[{
+          data: byClub,
+          backgroundColor:['#E8151B','#3b82f6','#f59e0b','#22c55e'],
+          borderRadius:5, borderSkipped:false
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{ticks:{color:'#666',font:{size:11}},grid:{display:false}},
+          y:{ticks:{color:'#666',stepSize:1,font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'},min:0}
+        }
+      }
+    });
+    charts.push(c1);
+
+    // Abo donut
+    if(topAbo.length){
+      const c2 = new Chart(document.getElementById('cAboDonut'), {
+        type:'doughnut',
+        data:{
+          labels: topAbo.map(e=>e[0]),
+          datasets:[{
+            data: topAbo.map(e=>e[1]),
+            backgroundColor:['#E8151B','#3b82f6','#f59e0b','#22c55e','#a855f7','#06b6d4'],
+            borderWidth:0, hoverOffset:8
+          }]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{legend:{position:'bottom',labels:{color:'#666',font:{size:10},boxWidth:10,padding:8}}},
+          cutout:'62%'
+        }
+      });
+      charts.push(c2);
+    }
+  }, 80);
+}
+
+/* ════════════════════════════════
+   CLUB VIEW
+════════════════════════════════ */
+function renderClub(name){
+  const dataRows = allData[name] || [];
+  const data = applyFilters(dataRows);
+  const label = CLUBS.find(c=>c.name===name)?.label || name;
+  setHeader(`CLUB <span>${name}</span>`, `${label} — ${data.length} client(s)`);
+
+  const total   = data.length;
+  const chaud   = data.filter(r=>isChaud(r)).length;
+  const avecAbo = data.filter(r=>getAbo(r)).length;
+  const rdvList = data.filter(r=>getVisite(r));
+  const waCount = data.filter(r=>isWA(r)).length;
+  const pctChaud= pct(chaud,total);
+  const pctAbo  = pct(avecAbo,total);
+  const pctRdv  = pct(rdvList.length,total);
+  const aboMap  = getAboMap(data);
+  const topAbo  = Object.entries(aboMap).sort((a,b)=>b[1]-a[1]);
+
+  const mc = document.getElementById('mainContent');
+
+  if(total === 0){
+    mc.innerHTML = `<div style="text-align:center;padding:80px 20px;color:var(--gray)">
+      <div style="font-size:48px;margin-bottom:16px">🏋️</div>
+      <div style="font-family:'Bebas Neue',cursive;font-size:28px;letter-spacing:3px;margin-bottom:8px">${name}</div>
+      <p style="font-size:14px">Aucun client enregistré dans ce club pour le moment.</p>
+      <p style="font-size:12px;margin-top:8px;color:var(--gray2)">Les données apparaîtront automatiquement dès qu'un client sera ajouté dans Google Sheets.</p>
+    </div>`;
+    return;
+  }
+
+  mc.innerHTML = `
+  <!-- FILTERS -->
+  <div class="table-card" style="margin-bottom:16px">
+    ${dateFilterBar()}
+    ${scoreFilterBar()}
+  </div>
+  <div class="stats-grid">
+    ${statCard('r','👥','Total Clients',total,name)}
+    ${statCard('g','🔥','Leads Chauds',chaud,`<span class="sup">${pctChaud}%</span> du total`)}
+    ${statCard('a','📋','Abonnés',avecAbo,`<span class="sup">${pctAbo}%</span> convertis`)}
+    ${statCard('b','📅','Rendez-vous',rdvList.length,`${waCount} via WhatsApp`)}
+  </div>
+
+  <div class="charts-row">
+    <div class="cc">
+      <div class="ct">ABONNEMENTS — ${name}</div>
+      <div class="cs">Répartition des formules souscrites</div>
+      <div class="ch" style="height:200px">
+        <canvas id="cClubBar" role="img" aria-label="Abonnements ${name}"></canvas>
+      </div>
+    </div>
+    <div class="cc">
+      <div class="ct">LEAD SCORE</div>
+      <div class="cs">Qualité des prospects</div>
+      <div class="ch" style="height:200px">
+        <canvas id="cClubPie" role="img" aria-label="Lead score ${name}"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="donuts-row">
+    ${donutHTML('LEADS CHAUDS',    pctChaud,     '#E8151B', `<strong>${chaud}</strong> / ${total}`)}
+    ${donutHTML('ABONNÉS',         pctAbo,       '#22c55e', `<strong>${avecAbo}</strong> / ${total}`)}
+    ${donutHTML('SANS ABONNEMENT', 100-pctAbo,   '#f59e0b', `<strong>${total-avecAbo}</strong> à convertir`)}
+    ${donutHTML('RENDEZ-VOUS',     pctRdv,       '#3b82f6', `<strong>${rdvList.length}</strong> visite(s) planifiée(s)`)}
+  </div>
+
+  <div class="bars-row">
+    <div class="bc">
+      <div class="ct">FORMULES SOUSCRITES</div>
+      <div class="cs" style="margin-bottom:18px">Par type d'abonnement</div>
+      ${topAbo.length ? topAbo.map((e,i) => {
+        const p2 = total ? Math.round(e[1]/total*100) : 0;
+        return barItem(e[0], e[1]+' client(s)', Math.max(p2,3), ['','b','a','g'][Math.min(i,3)]);
+      }).join('') : '<p style="color:var(--gray2);font-size:13px">Aucun abonnement enregistré</p>'}
+    </div>
+    <div class="bc">
+      <div class="ct">PROCHAINS RENDEZ-VOUS</div>
+      <div class="cs" style="margin-bottom:18px">Visites planifiées</div>
+      ${rdvList.length ? rdvList.slice(0,6).map((r,i) => {
+        const n = getNom(r) || 'Client';
+        const v = getVisite(r);
+        return barItem(n, v, Math.max(90-i*14,10), ['','b','a','g','gray'][Math.min(i,4)]);
+      }).join('') : '<p style="color:var(--gray2);font-size:13px">Aucun rendez-vous planifié</p>'}
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="th2">
+      <div>
+        <div class="ct">CLIENTS — ${name}</div>
+        <div class="cs">${total} client(s) dans ce club</div>
+      </div>
+      <input class="search" type="text" placeholder="Rechercher..." oninput="filterT(this.value,'tbl-club')"/>
+    </div>
+    <div class="tbl-wrap">${buildTable(data,'tbl-club')}</div>
+  </div>`;
+
+  setTimeout(() => {
+    if(topAbo.length){
+      const c1 = new Chart(document.getElementById('cClubBar'),{
+        type:'bar',
+        data:{
+          labels:topAbo.map(e=>e[0]),
+          datasets:[{data:topAbo.map(e=>e[1]),backgroundColor:'#E8151B',borderRadius:5}]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          scales:{
+            x:{ticks:{color:'#666',font:{size:10},maxRotation:25},grid:{display:false}},
+            y:{ticks:{color:'#666',stepSize:1,font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'},min:0}
+          }
+        }
+      });
+      charts.push(c1);
+    }
+
+    if(total > 0){
+      const other = total - chaud;
+      const c2 = new Chart(document.getElementById('cClubPie'),{
+        type:'doughnut',
+        data:{
+          labels:['Chaud', other>0?'Autre':''],
+          datasets:[{
+            data: other > 0 ? [chaud, other] : [chaud],
+            backgroundColor: other > 0 ? ['#E8151B','#252525'] : ['#E8151B'],
+            borderWidth:0, hoverOffset:6
+          }]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{position:'bottom',labels:{color:'#666',font:{size:11},boxWidth:10,padding:8,filter:i=>i.text!==''}}},
+          cutout:'60%'
+        }
+      });
+      charts.push(c2);
+    }
+  }, 80);
+}
+
+/* ════════════════════════════════
+   FILTERED VIEWS
+════════════════════════════════ */
+function renderFiltered(type){
+  const all = getAllRows();
+  let filtered, title, sub;
+
+  if(type==='leads'){
+    filtered = all.filter(r=>isChaud(r));
+    title = 'LEADS <span>CHAUDS</span>';
+    sub   = `${filtered.length} lead(s) qualifié(s)`;
+  } else if(type==='abo'){
+    filtered = all.filter(r=>validState.sub[encodeURIComponent(getClientKey(r))]);
+    title = '<span>ABONNEMENTS</span>';
+    sub   = `${filtered.length} abonnement(s) validé(s)`;
+  } else if(type==='rdv'){
+    filtered = all.filter(r=>getVisite(r));
+    title = '<span>RENDEZ-VOUS</span>';
+    sub   = `${filtered.length} visite(s) planifiée(s)`;
+  } else if(type==='visite'){
+    filtered = all.filter(r=>validState.visit[encodeURIComponent(getClientKey(r))]);
+    title = '<span>VISITES</span> <span>CONFIRMÉES</span>';
+    sub   = `${filtered.length} visite(s) confirmée(s)`;
+  }
+
+  setHeader(title, sub);
+  const total = filtered.length;
+  const chaud = filtered.filter(r=>isChaud(r)).length;
+  const avecAbo = filtered.filter(r=>getAbo(r)).length;
+
+  const mc = document.getElementById('mainContent');
+  mc.innerHTML = `
+  <div class="stats-grid">
+    ${statCard('r','📋','Résultats',total,'Clients filtrés')}
+    ${statCard('g','🔥','Leads Chauds',chaud,`<span class="sup">${pct(chaud,total)}%</span>`)}
+    ${statCard('a','📋','Abonnés',avecAbo,`<span class="sup">${pct(avecAbo,total)}%</span>`)}
+    ${statCard('b','🏋️','Clubs',CLUBS.filter(c=>(allData[c.name]||[]).some(r=>filtered.includes(r))).length,'clubs concernés')}
+  </div>
+  <div class="table-card">
+    <div class="th2">
+      <div>
+        <div class="ct">RÉSULTATS FILTRÉS</div>
+        <div class="cs">${total} client(s) trouvé(s)</div>
+      </div>
+      <input class="search" type="text" placeholder="Rechercher..." oninput="filterT(this.value,'tbl-filter')"/>
+    </div>
+    ${dateFilterBar()}
+    <div class="tbl-wrap">${buildTable(filtered,'tbl-filter')}</div>
+  </div>`;
+}
+
+/* ════════════════════════════════
+   HELPERS — DATA
+════════════════════════════════ */
+function getAllRows(){ return Object.values(allData).flat(); }
+
+function getNom(r){
+  return r['Nom & Prenom'] || r['Nom & Prénom'] || r['Nom &amp; Prenom'] || '';
+}
+function getNum(r){ return r['Numero'] || r['Numéro'] || ''; }
+function getScore(r){ return r['Lead score'] || r['Lead Score'] || ''; }
+function getVisite(r){ return r['Jour/Heure de visite'] || ''; }
+function getAbo(r){ return r["Type d'abonnement"] || ''; }
+function getDate(r){ return r["Date D'inscription"] || r["Date D'Inscription"] || ''; }
+function isChaud(r){ return getScore(r).toLowerCase().includes('chaud'); }
+function isWA(r){ return getDate(r).toUpperCase().includes('WHATSAPP'); }
+function getAboMap(rows){
+  const map = {};
+  rows.forEach(r => { const t=cleanPromoName(getAbo(r)); if(t) map[t]=(map[t]||0)+1; });
+  return map;
+}
+function pct(a,b){ return b ? Math.round(a/b*100) : 0; }
+
+/* ════════════════════════════════
+   HELPERS — UI
+════════════════════════════════ */
+function setHeader(title, sub){
+  document.getElementById('pageTitle').innerHTML = title;
+  document.getElementById('pageSub').textContent = sub;
+}
+
+function statCard(cls, ico, label, val, sub){
+  return `<div class="sc ${cls}">
+    <div class="sico">${ico}</div>
+    <div class="slbl">${label}</div>
+    <div class="sval">${val}</div>
+    <div class="ssub">${sub}</div>
+  </div>`;
+}
+
+function donutHTML(title, p, color, sub){
+  const r = 46, circ = 2*Math.PI*r;
+  const dash = circ * Math.min(p,100) / 100;
+  return `<div class="dc">
+    <div class="dc-title">${title}</div>
+    <div class="dw">
+      <svg class="dr" width="110" height="110" viewBox="0 0 110 110">
+        <circle cx="55" cy="55" r="${r}" fill="none" stroke="#1E1E1E" stroke-width="11"/>
+        <circle cx="55" cy="55" r="${r}" fill="none" stroke="${color}" stroke-width="11"
+          stroke-dasharray="${dash.toFixed(2)} ${(circ-dash).toFixed(2)}"
+          stroke-linecap="round"/>
+      </svg>
+      <div class="dctr">
+        <div class="dpct" style="color:${color}">${p}%</div>
+      </div>
+    </div>
+    <div class="dc-sub">${sub}</div>
+  </div>`;
+}
+
+function barItem(name, val, p, cls){
+  return `<div class="bi">
+    <div class="bl"><span class="n">${name}</span><span class="v">${val}</span></div>
+    <div class="bt"><div class="bf ${cls}" style="width:${Math.min(p,100)}%"></div></div>
+  </div>`;
+}
+
+function applyFilters(data){
+  let f = data;
+  if(activeDateFilter!=='all') f = f.filter(r => matchDateFilter(getVisite(r)));
+  if(activeScoreFilter==='chaud') f = f.filter(r => isChaud(r));
+  else if(activeScoreFilter==='froid') f = f.filter(r => !isChaud(r) && getScore(r));
+  return f;
+}
+function buildTable(data, id){
+  let filtered = data;
+  if(activeDateFilter!=='all') filtered = data.filter(r => matchDateFilter(getVisite(r)));
+  if(activeScoreFilter==='chaud') filtered = filtered.filter(r => isChaud(r));
+  else if(activeScoreFilter==='froid') filtered = filtered.filter(r => !isChaud(r) && getScore(r));
+  // Sort by date descending (newest first)
+  filtered.sort((a,b)=>{
+    const da=getDate(a)||getVisite(a)||'';
+    const db=getDate(b)||getVisite(b)||'';
+    const pa=parseLocalDate(da),pb=parseLocalDate(db);
+    return (isNaN(pb)?0:pb.getTime())-(isNaN(pa)?0:pa.getTime());
+  });
+  if(!filtered.length) return '<div class="no-rows">Aucun client pour cette sélection/date</div>';
+  const hasRdv = (r) => !!getVisite(r);
+  return '<table id="'+id+'">\
+    <thead><tr>\
+      <th>Nom & Prénom</th>\
+      <th>Numéro</th>\
+      <th>Lead Score</th>\
+      <th>Visite planifiée</th>\
+      <th>Abonnement</th>\
+      <th>Date / Source</th>\
+      <th>Club</th>\
+      <th>✅ Abo</th><th>✅ Visite</th>\
+    </tr></thead>\
+    <tbody>'+
+      filtered.map(r => {
+        const nom   = getNom(r) || '—';
+        const num   = getNum(r) || '—';
+        const score = getScore(r) || '—';
+        const visite= getVisite(r) || '';
+        const abo   = cleanPromoName(getAbo(r)) || '';
+        const date  = getDate(r) || '';
+        const club  = r._club || '';
+        const wa    = isWA(r);
+        const key   = encodeURIComponent(getClientKey(r));
+        const sv    = !!validState.sub[key];
+        const vv    = !!validState.visit[key];
+        const clickable = true;
+        const scoreClass = score.toLowerCase().includes('chaud') ? 'bh-r' : 'bh-a';
+        return '<tr>\
+          <td style="font-weight:600">'+nom+'</td>\
+          <td style="color:#555;font-size:12px;font-family:monospace">'+num+'</td>\
+          <td><span class="bh '+scoreClass+'">'+score+'</span></td>\
+          <td style="font-size:12px;color:#888">'+(visite||'<span class="no-data-cell">—</span>')+'</td>\
+          <td>'+(abo?'<span class="tb2">'+abo+'</span>':'<span class="no-data-cell">—</span>')+'</td>\
+          <td style="font-size:12px">'+(wa?'<span class="tw">📱 WhatsApp</span>':'<span style="color:#555">'+(date||'—')+'</span>')+'</td>\
+          <td><span class="club-pill">'+club+'</span></td>\
+          <td><button class="vbtn '+(sv?'vbtn-on':'vbtn-off')+'" onclick="'+(clickable?'toggleSubValid(\''+key+'\')':'')+'" '+(clickable?'':'disabled')+'>'+(sv?'✅':'⬜')+'</button></td>\
+          <td><button class="vbtn '+(vv?'vbtn-on':'vbtn-off')+'" onclick="'+(clickable?'toggleVisitValid(\''+key+'\')':'')+'" '+(clickable?'':'disabled')+'>'+(vv?'✅':'⬜')+'</button></td>\
+        </tr>';
+      }).join('')+'\
+    </tbody>\
+  </table>';
+}
+
+function filterT(q, id){
+  const tbl = document.getElementById(id);
+  if(!tbl) return;
+  tbl.querySelectorAll('tbody tr').forEach(tr => {
+    tr.style.display = tr.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function destroyCharts(){
+  charts.forEach(c => { try{ c.destroy(); }catch(e){} });
+  charts = [];
+}
+
+function showToast(icon, msg){
+  const t = document.getElementById('toast');
+  document.getElementById('toastIcon').textContent = icon;
+  document.getElementById('toastMsg').textContent  = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+/* ════════════════════════════════
+   VALIDATION
+════════════════════════════════ */
+function getClientKey(r){ return (r._club||'')+'|'+(getNom(r)||'')+'|'+(getNum(r)||''); }
+function decodeKey(k){const p=decodeURIComponent(k).split('|');return{club:p[0]||'',nom:p[1]||'',numero:p[2]||''}}
+async function toggleSubValid(key){
+  if(validState.sub[key]||savingKeys.sub[key])return;
+  validState.sub[key]=true;savingKeys.sub[key]=true;
+  renderView();showToast('✅','Abonnement validé !');
+  const d=decodeKey(key);
+  try{
+    await fetch(API_BASE+'/validate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+JWT_TOKEN},body:JSON.stringify({feuille:'Abonnement',club:d.club,nom:d.nom,numero:d.numero})});
+  }catch(e){showToast('❌','Erreur enregistrement');}
+  setTimeout(()=>{delete savingKeys.sub[key];loadAllData()},3000);
+}
+async function toggleVisitValid(key){
+  if(validState.visit[key]||savingKeys.visit[key])return;
+  validState.visit[key]=true;savingKeys.visit[key]=true;
+  renderView();showToast('✅','Visite confirmée !');
+  const d=decodeKey(key);
+  try{
+    await fetch(API_BASE+'/validate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+JWT_TOKEN},body:JSON.stringify({feuille:'VISITE',club:d.club,nom:d.nom,numero:d.numero})});
+  }catch(e){showToast('❌','Erreur enregistrement');}
+  setTimeout(()=>{delete savingKeys.visit[key];loadAllData()},3000);
+}
+
+/* ════════════════════════════════
+   PROMO CLEANER
+════════════════════════════════ */
+function cleanPromoName(n){
+  const p=(n||'').trim().toUpperCase().replace(/\s+/g,' ');
+  const valid=['DIMA M3A BA3DNA','TOURIST+','FULL PACK','BEGINNER','TOURIST','STANDARD','FIDELITE'];
+  return valid.includes(p) ? n.trim() : '';
+}
+
+/* ════════════════════════════════
+   DATE FILTER
+════════════════════════════════ */
+function setDateFilter(v){ activeDateFilter=v||'all';renderView(); }
+function parseLocalDate(str){
+  const t=str.trim();
+  const dmy=t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(dmy) return new Date(parseInt(dmy[3]),parseInt(dmy[2])-1,parseInt(dmy[1]));
+  const iso=t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(iso) return new Date(parseInt(iso[1]),parseInt(iso[2])-1,parseInt(iso[3]));
+  return new Date(t);
+}
+function matchDateFilter(s){
+  if(activeDateFilter==='all'||!s) return activeDateFilter==='all';
+  try{
+    const d=parseLocalDate(s);
+    if(isNaN(d.getTime()))return activeDateFilter==='all';
+    const t=new Date();t.setHours(0,0,0,0);d.setHours(0,0,0,0);
+    if(activeDateFilter==='today') return d.getTime()===t.getTime();
+    if(activeDateFilter==='tomorrow'){const tm=new Date(t);tm.setDate(tm.getDate()+1);return d.getTime()===tm.getTime();}
+    if(activeDateFilter==='week'){const w=new Date(t);w.setDate(w.getDate()+7);return d>=t&&d<w;}
+    if(activeDateFilter==='month'){const m=new Date(t);m.setMonth(m.getMonth()+1);return d>=t&&d<m;}
+    const fd=parseLocalDate(activeDateFilter);if(isNaN(fd.getTime()))return true;
+    fd.setHours(0,0,0,0);return d.getTime()===fd.getTime();
+  }catch(e){return true;}
+}
+function setScoreFilter(v){ activeScoreFilter=v||'all';renderView(); }
+function scoreFilterBar(){
+  const items=[{k:'all',l:'Tous'},{k:'chaud',l:'🔥 Chaud'},{k:'froid',l:'❄️ Froid'}];
+  return '<div class="df-bar">'+items.map(({k,l})=>'<button class="df-btn '+(activeScoreFilter===k?'active':'')+'" onclick="setScoreFilter(\''+k+'\')">'+l+'</button>').join('')+'</div>';
+}
+function dateFilterBar(){
+  const items=[{k:'all',l:'Tous'},{k:'today',l:"Aujourd'hui"},{k:'tomorrow',l:'Demain'},{k:'week',l:'Cette semaine'},{k:'month',l:'Ce mois'}];
+  return '<div class="df-bar">'+items.map(({k,l})=>'<button class="df-btn '+(activeDateFilter===k?'active':'')+'" onclick="setDateFilter(\''+k+'\')">'+l+'</button>').join('')+'<input type="date" class="df-input" onchange="setDateFilter(this.value)"/></div>';
+}
+</script>
+</body>
+</html>
