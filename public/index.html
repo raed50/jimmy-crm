@@ -14,6 +14,19 @@
   --black:#090909;--black2:#111111;--black3:#181818;--black4:#202020;--black5:#252525;
   --white:#FFFFFF;--gray:#777777;--gray2:#444444;--border:#252525;--border2:#2E2E2E;
 }
+:root.light{
+  --black:#F5F5F5;--black2:#FFFFFF;--black3:#FAFAFA;--black4:#EEEEEE;--black5:#E0E0E0;
+  --white:#111111;--gray:#888888;--gray2:#999999;--border:#DDDDDD;--border2:#CCCCCC;
+}
+:root.light .login-left{background:#F0F0F0}
+:root.light .login-right{background:#FAFAFA}
+:root.light .login-box{background:#FFFFFF;border:1px solid #E0E0E0}
+:root.light .sb{background:#FFFFFF;border-right:1px solid #E0E0E0}
+:root.light .sb-logo{border-bottom:1px solid #E0E0E0}
+:root.light input,.root.light .search{background:#F0F0F0;color:#111}
+:root.light .bar,.root.light .bar2{background:#E8E8E8}
+:root.light .live-badge{background:#F0F0F0;border-color:#DDD}
+:root.light canvas{filter:none}
 body{background:var(--black);color:var(--white);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden}
 
 /* ════════════════════════════════
@@ -158,6 +171,8 @@ body{background:var(--black);color:var(--white);font-family:'Rajdhani',sans-seri
   background:var(--black3);border:1px solid var(--border);
   color:var(--gray);font-size:12px;padding:6px 14px;border-radius:7px;
 }
+.theme-btn{background:var(--black4);border:1px solid var(--border);color:var(--gray);font-size:16px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-btn:hover{border-color:var(--red);color:var(--red);transform:scale(1.1)}
 .refresh-btn{
   background:var(--black3);border:1px solid var(--border);color:var(--gray);
   font-size:13px;padding:6px 14px;border-radius:7px;cursor:pointer;
@@ -526,6 +541,7 @@ tr:hover td{background:rgba(232,21,27,0.03)}
       </div>
       <div class="pr">
         <div class="live-badge"><div class="dot"></div> LIVE</div>
+        <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="Mode clair/sombre">🌙</button>
         <div class="dbadge" id="dateBadge"></div>
         <div class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">
           <span class="ricon" id="ricon">↻</span> Actualiser
@@ -582,6 +598,19 @@ let validState = { sub: {}, visit: {} };
 let savingKeys = { sub: {}, visit: {} };
 let activeDateFilter = 'all';
 let activeScoreFilter = 'all';
+
+function toggleTheme(){
+  document.documentElement.classList.toggle('light');
+  const isLight = document.documentElement.classList.contains('light');
+  document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+(function(){
+  if(localStorage.getItem('theme')==='light'){
+    document.documentElement.classList.add('light');
+    document.getElementById('themeBtn').textContent='☀️';
+  }
+})();
 
 /* ════════════════════════════════
    LOGIN
