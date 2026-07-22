@@ -778,6 +778,8 @@ function updateCounters(){
 function setView(view, el, club=null){
   currentView = view;
   currentClub = club;
+  activeDateFilter = 'all';
+  activeScoreFilter = 'all';
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
   if(el) el.classList.add('active');
   renderView();
